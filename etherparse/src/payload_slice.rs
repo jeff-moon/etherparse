@@ -30,6 +30,9 @@ pub enum PayloadSlice<'a> {
     /// Payload part of an ICMP V4 message. Check [`crate::Icmpv6Type`]
     /// for a description what will be part of the payload.
     Icmpv6(&'a [u8]),
+
+    /// Empty payload after an IGMPv1 header (IGMPv1 has no payload).
+    Igmpv1,
 }
 
 impl<'a> PayloadSlice<'a> {
@@ -43,6 +46,7 @@ impl<'a> PayloadSlice<'a> {
             PayloadSlice::Tcp(s) => s,
             PayloadSlice::Icmpv4(s) => s,
             PayloadSlice::Icmpv6(s) => s,
+            PayloadSlice::Igmpv1 => &[],
         }
     }
 }

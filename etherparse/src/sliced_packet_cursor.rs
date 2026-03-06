@@ -196,6 +196,7 @@ impl<'a> SlicedPacketCursor<'a> {
                     }
                 }),
                 ip_number::IPV6_ICMP => self.slice_icmp6(payload.payload).map_err(Len),
+                ip_number::IGMP => self.slice_igmpv1(payload.payload).map_err(Len),
                 _ => Ok(self.result),
             }
         }
@@ -247,6 +248,7 @@ impl<'a> SlicedPacketCursor<'a> {
                 }),
                 ip_number::ICMP => self.slice_icmp4(payload.payload).map_err(Len),
                 ip_number::IPV6_ICMP => self.slice_icmp6(payload.payload).map_err(Len),
+                ip_number::IGMP => self.slice_igmpv1(payload.payload).map_err(Len),
                 _ => Ok(self.result),
             }
         }
@@ -300,6 +302,7 @@ impl<'a> SlicedPacketCursor<'a> {
                     }
                 }),
                 ip_number::IPV6_ICMP => self.slice_icmp6(payload.payload).map_err(Len),
+                ip_number::IGMP => self.slice_igmpv1(payload.payload).map_err(Len),
                 _ => Ok(self.result),
             }
         }
@@ -355,6 +358,24 @@ impl<'a> SlicedPacketCursor<'a> {
         self.result.transport = Some(Icmpv6(result.clone()));
 
         //done
+        Ok(self.result)
+    }
+
+    pub fn slice_igmpv1(mut self, slice: &'a [u8]) -> Result<SlicedPacket<'a>, err::LenError> {
+        use crate::TransportSlice::*;
+
+        let result = Igmpv1Slice::from_slice(slice).map_err(|mut err| {
+            err.layer_start_offset += self.offset;
+            if LenSource::Slice == err.len_source {
+                err.len_source = self.len_source;
+            }
+            err
+        })?;
+
+        //set the new data
+        self.offset += result.slice().len();
+        self.result.transport = Some(Igmpv1(result.clone()));
+
         Ok(self.result)
     }
 

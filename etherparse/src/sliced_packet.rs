@@ -1474,7 +1474,7 @@ mod test {
         for fragmented in [false, true] {
             let ipv4 = {
                 let mut ipv4 =
-                    Ipv4Header::new(0, 1, 2.into(), [3, 4, 5, 6], [7, 8, 9, 10]).unwrap();
+                    Ipv4Header::new(0, 1, 255.into(), [3, 4, 5, 6], [7, 8, 9, 10]).unwrap();
                 ipv4.more_fragments = fragmented;
                 ipv4
             };
@@ -2005,6 +2005,58 @@ mod test {
                 }
             }
 
+            // igmpv1
+            {
+                let igmpv1 = Igmpv1Header::new(Igmpv1Type::MembershipQuery, [224, 0, 0, 1]);
+                let mut test = base.clone();
+                test.net = Some({
+                    let mut ip = match ip {
+                        NetHeaders::Ipv4(h, e) => IpHeaders::Ipv4(h.clone(), e.clone()),
+                        NetHeaders::Ipv6(h, e) => IpHeaders::Ipv6(h.clone(), e.clone()),
+                        NetHeaders::Arp(_) => unreachable!(),
+                    };
+                    ip.set_next_headers(ip_number::IGMP);
+                    ip.into()
+                });
+                test.transport = Some(TransportHeader::Igmpv1(igmpv1.clone()));
+                test.set_payload_len(0);
+
+                // ok decode
+                from_x_slice_assert_ok(&test);
+
+                // length error
+                if false == test.is_ip_payload_fragmented() {
+                    for len in 0..igmpv1.header_len() {
+                        // set payload length
+                        let mut test = test.clone();
+                        test.set_payload_len_ip(len as isize);
+                        test.set_payload_len_link_ext(
+                            len + test.net.as_ref().map(|v| v.header_len()).unwrap_or(0),
+                        );
+
+                        let data = test.to_vec(&[]);
+                        let base_len = test.len(&[]) - igmpv1.header_len();
+
+                        let err = LenError {
+                            required_len: igmpv1.header_len(),
+                            len,
+                            len_source: match test.net.as_ref().unwrap() {
+                                NetHeaders::Ipv4(_, _) => LenSource::Ipv4HeaderTotalLen,
+                                NetHeaders::Ipv6(_, _) => LenSource::Ipv6HeaderPayloadLen,
+                                NetHeaders::Arp(_) => unreachable!(),
+                            },
+                            layer: Layer::Igmpv1,
+                            layer_start_offset: base_len,
+                        };
+                        from_slice_assert_err(
+                            &test,
+                            &data[..base_len + len],
+                            SliceError::Len(err.clone()),
+                        );
+                    }
+                }
+            }
+
             // icmpv6
             {
                 let icmpv6 =
@@ -2129,6 +2181,9 @@ mod test {
                     }
                     Some(S::Tcp(s)) => {
                         assert_eq!(&test.transport, &Some(H::Tcp(s.to_header())));
+                    }
+                    Some(S::Igmpv1(igmpv1)) => {
+                        assert_eq!(&test.transport, &Some(H::Igmpv1(igmpv1.header())));
                     }
                     None => {
                         assert_eq!(&test.transport, &None);

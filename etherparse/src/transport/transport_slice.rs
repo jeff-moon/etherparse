@@ -14,6 +14,9 @@ pub enum TransportSlice<'a> {
 
     /// A slice containing a TCP header & payload.
     Tcp(TcpSlice<'a>),
+
+    /// A slice containing an IGMPv1 header.
+    Igmpv1(Igmpv1Slice<'a>),
 }
 
 #[cfg(test)]

@@ -1964,6 +1964,7 @@ fn final_write_with_net<T: io::Write + Sized, B>(
         Some(Tcp(_)) => {}
         Some(Icmpv4(_)) => {}
         Some(Icmpv6(_)) => {}
+        Some(Igmpv1(_)) => {}
         None => {}
     }
 
@@ -1982,6 +1983,7 @@ fn final_write_with_net<T: io::Write + Sized, B>(
                 ip.protocol = ip_exts.set_next_headers(match &transport {
                     Icmpv4(_) => ip_number::ICMP,
                     Icmpv6(_) => ip_number::IPV6_ICMP,
+                    Igmpv1(_) => ip_number::IGMP,
                     Udp(_) => ip_number::UDP,
                     Tcp(_) => ip_number::TCP,
                 });
@@ -2021,6 +2023,7 @@ fn final_write_with_net<T: io::Write + Sized, B>(
                 ip.next_header = ip_exts.set_next_headers(match &transport {
                     Icmpv4(_) => ip_number::ICMP,
                     Icmpv6(_) => ip_number::IPV6_ICMP,
+                    Igmpv1(_) => ip_number::IGMP,
                     Udp(_) => ip_number::UDP,
                     Tcp(_) => ip_number::TCP,
                 });
@@ -2080,6 +2083,7 @@ fn final_size<B>(builder: &PacketBuilderStep<B>, payload_size: usize) -> usize {
         Some(Icmpv6(ref value)) => value.header_len(),
         Some(Udp(_)) => UdpHeader::LEN,
         Some(Tcp(ref value)) => value.header_len(),
+        Some(Igmpv1(ref value)) => value.header_len(),
         None => 0,
     } + payload_size
 }

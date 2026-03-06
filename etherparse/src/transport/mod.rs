@@ -7,6 +7,15 @@ pub mod icmpv6;
 mod icmp_echo_header;
 pub use icmp_echo_header::*;
 
+mod igmpv1_header;
+pub use igmpv1_header::*;
+
+mod igmpv1_slice;
+pub use igmpv1_slice::*;
+
+mod igmpv1_type;
+pub use igmpv1_type::*;
+
 mod icmpv4_header;
 pub use icmpv4_header::*;
 

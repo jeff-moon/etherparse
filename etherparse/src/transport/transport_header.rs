@@ -10,6 +10,7 @@ pub enum TransportHeader {
     Tcp(TcpHeader),
     Icmpv4(Icmpv4Header),
     Icmpv6(Icmpv6Header),
+    Igmpv1(Igmpv1Header),
 }
 
 impl TransportHeader {
@@ -101,6 +102,28 @@ impl TransportHeader {
         }
     }
 
+    /// Returns Result::Some containing the IGMPv1 header if self has the value Igmpv1.
+    /// Otherwise None is returned.
+    pub fn igmpv1(self) -> Option<Igmpv1Header> {
+        use crate::TransportHeader::*;
+        if let Igmpv1(value) = self {
+            Some(value)
+        } else {
+            None
+        }
+    }
+
+    /// Returns Result::Some containing a mutable reference to the IGMPv1 header if self has the value Igmpv1.
+    /// Otherwise None is returned.
+    pub fn mut_igmpv1(&mut self) -> Option<&mut Igmpv1Header> {
+        use crate::TransportHeader::*;
+        if let Igmpv1(value) = self {
+            Some(value)
+        } else {
+            None
+        }
+    }
+
     /// Returns the size of the transport header (in case of UDP fixed,
     /// in case of TCP cotanining the options).
     pub fn header_len(&self) -> usize {
@@ -110,6 +133,7 @@ impl TransportHeader {
             Tcp(value) => value.header_len(),
             Icmpv4(value) => value.header_len(),
             Icmpv6(value) => value.header_len(),
+            Igmpv1(value) => value.header_len(),
         }
     }
 
@@ -135,6 +159,9 @@ impl TransportHeader {
             Icmpv4(header) => {
                 header.update_checksum(payload);
             }
+            Igmpv1(header) => {
+                header.update_checksum();
+            }
             Icmpv6(_) => return Err(Icmpv6InIpv4),
         }
         Ok(())
@@ -150,6 +177,7 @@ impl TransportHeader {
         use crate::TransportHeader::*;
         match self {
             Icmpv4(header) => header.update_checksum(payload),
+            Igmpv1(header) => header.update_checksum(),
             Icmpv6(header) => {
                 header.update_checksum(ip_header.source, ip_header.destination, payload)?
             }
@@ -171,6 +199,7 @@ impl TransportHeader {
         match self {
             Icmpv4(value) => value.write(writer),
             Icmpv6(value) => value.write(writer),
+            Igmpv1(value) => value.write(writer),
             Udp(value) => value.write(writer),
             Tcp(value) => value.write(writer),
         }

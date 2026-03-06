@@ -482,6 +482,7 @@ prop_compose! {
 
 static IPV4_KNOWN_PROTOCOLS: &[IpNumber] = &[
     ip_number::ICMP,
+    ip_number::IGMP,
     ip_number::UDP,
     ip_number::TCP,
     ip_number::AUTH,
@@ -580,6 +581,7 @@ prop_compose! {
 
 static IPV6_KNOWN_NEXT_HEADERS: &[IpNumber] = &[
     ip_number::ICMP,
+    ip_number::IGMP,
     ip_number::UDP,
     ip_number::TCP,
     ip_number::IPV6_HOP_BY_HOP,
@@ -861,6 +863,29 @@ prop_compose! {
     ) -> TcpOptions
     {
         TcpOptions::try_from_slice(&options).unwrap()
+    }
+}
+
+pub fn igmpv1_type_any() -> impl Strategy<Value = Igmpv1Type> {
+    prop_oneof![
+        Just(Igmpv1Type::MembershipQuery),
+        Just(Igmpv1Type::MembershipReport),
+    ]
+}
+
+prop_compose! {
+    pub fn igmpv1_header_any()
+        (
+            igmpv1_type in igmpv1_type_any(),
+            checksum in any::<u16>(),
+            group_address in any::<[u8; 4]>(),
+        ) -> Igmpv1Header
+    {
+        Igmpv1Header {
+            version_type: igmpv1_type,
+            checksum,
+            group_address,
+        }
     }
 }
 

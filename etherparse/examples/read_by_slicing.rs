@@ -111,6 +111,7 @@ fn main() {
                         value.options_iterator().collect();
                     println!("    {:?}", options);
                 }
+                Some(Igmpv1(value)) => println!(" Igmpv1 {:?}", value),
                 None => {}
             }
         }

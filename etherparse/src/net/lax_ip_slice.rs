@@ -529,7 +529,7 @@ mod test {
     fn source_addr() {
         // ipv4
         {
-            let data = Ipv4Header::new(0, 1, 2.into(), [3, 4, 5, 6], [7, 8, 9, 10])
+            let data = Ipv4Header::new(0, 1, 255.into(), [3, 4, 5, 6], [7, 8, 9, 10])
                 .unwrap()
                 .to_bytes();
             assert_eq!(

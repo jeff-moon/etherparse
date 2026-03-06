@@ -329,6 +329,19 @@ impl<'a> LaxSlicedPacketCursor<'a> {
                     ));
                 }
             },
+            ip_number::IGMP => match Igmpv1Slice::from_slice(slice.payload) {
+                Ok(igmp) => {
+                    self.offset += igmp.slice().len();
+                    self.result.transport = Some(TransportSlice::Igmpv1(igmp));
+                }
+                Err(mut err) => {
+                    err.layer_start_offset += self.offset;
+                    if LenSource::Slice == err.len_source {
+                        err.len_source = slice.len_source;
+                    }
+                    self.result.stop_err = Some((O::Len(err), Layer::Igmpv1));
+                }
+            },
             ip_number::IPV6_ICMP => match Icmpv6Slice::from_slice(slice.payload) {
                 Ok(icmp) => {
                     self.offset += icmp.slice().len();

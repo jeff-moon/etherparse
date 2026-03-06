@@ -67,6 +67,7 @@ impl<'a> ComponentTest<'a> {
             Some(TransportHeader::Icmpv4(header)) => header.write(&mut buffer).unwrap(),
             Some(TransportHeader::Udp(header)) => header.write(&mut buffer).unwrap(),
             Some(TransportHeader::Tcp(header)) => header.write(&mut buffer).unwrap(),
+            Some(TransportHeader::Igmpv1(header)) => header.write(&mut buffer).unwrap(),
             None => {}
         }
         use std::io::Write;
@@ -407,6 +408,7 @@ impl<'a> ComponentTest<'a> {
                     Some(TransportHeader::Icmpv6(actual.header())),
                 Some(TransportSlice::Udp(actual)) => Some(TransportHeader::Udp(actual.to_header())),
                 Some(TransportSlice::Tcp(actual)) => Some(TransportHeader::Tcp(actual.to_header())),
+                Some(TransportSlice::Igmpv1(actual)) => Some(TransportHeader::Igmpv1(actual.header())),
                 None => None,
             }
         );
@@ -431,6 +433,10 @@ impl<'a> ComponentTest<'a> {
             }
             Some(TransportSlice::Tcp(tcp)) => {
                 assert_eq!(&self.payload[..], tcp.payload());
+            }
+            Some(TransportSlice::Igmpv1(_)) => {
+                // IGMPv1 has no payload
+                assert_eq!(self.payload.len(), 0);
             }
             // check ip next
             None => {

@@ -52,6 +52,9 @@ pub enum LaxPayloadSlice<'a> {
         incomplete: bool,
     },
 
+    /// Empty payload after an IGMPv1 header (IGMPv1 has no payload).
+    Igmpv1,
+
     /// Linux SLL payload.
     LinuxSll(LinuxSllPayloadSlice<'a>),
 }
@@ -82,6 +85,7 @@ impl<'a> LaxPayloadSlice<'a> {
                 payload,
                 incomplete: _,
             } => payload,
+            LaxPayloadSlice::Igmpv1 => &[],
             LaxPayloadSlice::LinuxSll(linux_sll) => linux_sll.payload,
         }
     }
