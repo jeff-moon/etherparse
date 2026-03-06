@@ -9,6 +9,9 @@ pub enum TransportSlice<'a> {
     /// A slice containing an Icmp6 header & payload.
     Icmpv6(Icmpv6Slice<'a>),
 
+    /// A slice containing an Igmpv1 header & payload.
+    Igmpv1(Igmpv1Slice<'a>),
+
     /// A slice containing an UDP header & payload.
     Udp(UdpSlice<'a>),
 

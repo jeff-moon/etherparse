@@ -405,6 +405,7 @@ impl<'a> ComponentTest<'a> {
                     Some(TransportHeader::Icmpv4(actual.header())),
                 Some(TransportSlice::Icmpv6(actual)) =>
                     Some(TransportHeader::Icmpv6(actual.header())),
+                Some(TransportSlice::Igmpv1(_)) => None,
                 Some(TransportSlice::Udp(actual)) => Some(TransportHeader::Udp(actual.to_header())),
                 Some(TransportSlice::Tcp(actual)) => Some(TransportHeader::Tcp(actual.to_header())),
                 None => None,
@@ -425,6 +426,9 @@ impl<'a> ComponentTest<'a> {
             }
             Some(TransportSlice::Icmpv6(icmpv6)) => {
                 assert_eq!(&self.payload[..], icmpv6.payload());
+            }
+            Some(TransportSlice::Igmpv1(igmpv1)) => {
+                assert_eq!(&self.payload[..], igmpv1.payload());
             }
             Some(TransportSlice::Udp(udp)) => {
                 assert_eq!(&self.payload[..], udp.payload());

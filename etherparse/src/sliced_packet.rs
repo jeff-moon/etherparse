@@ -2124,6 +2124,9 @@ mod test {
                         assert_eq!(&test.transport, &Some(H::Icmpv6(icmpv6.header())));
                         assert_eq!(icmpv6.payload(), expected_payload);
                     }
+                    Some(S::Igmpv1(_)) => {
+                        assert_eq!(&test.transport, &None);
+                    }
                     Some(S::Udp(s)) => {
                         assert_eq!(&test.transport, &Some(H::Udp(s.to_header())));
                     }
