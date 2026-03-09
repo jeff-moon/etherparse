@@ -31,6 +31,12 @@ pub use igmpv1_header::*;
 mod igmpv2_header;
 pub use igmpv2_header::*;
 
+mod igmpv3_query_header;
+pub use igmpv3_query_header::*;
+
+mod igmpv3_report_header;
+pub use igmpv3_report_header::*;
+
 mod tcp_header;
 pub use tcp_header::*;
 
