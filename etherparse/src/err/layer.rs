@@ -52,6 +52,8 @@ pub enum Layer {
     Icmpv6,
     /// Error occurred while parsing an IGMPv1 packet.
     Igmpv1,
+    /// Error occurred while parsing an IGMPv2 packet.
+    Igmpv2,
     /// Error occurred while parsing an Address Resolution Protocol packet.
     Arp,
 }
@@ -86,6 +88,7 @@ impl Layer {
             Icmpv4TimestampReply => "ICMP Timestamp Reply Error",
             Icmpv6 => "ICMPv6 Packet Error",
             Igmpv1 => "IGMPv1 Packet Error",
+            Igmpv2 => "IGMPv2 Packet Error",
             Arp => "Address Resolution Protocol Packet Error",
         }
     }
@@ -120,6 +123,7 @@ impl core::fmt::Display for Layer {
             Icmpv4TimestampReply => write!(f, "ICMP timestamp reply message"),
             Icmpv6 => write!(f, "ICMPv6 packet"),
             Igmpv1 => write!(f, "IGMPv1 packet"),
+            Igmpv2 => write!(f, "IGMPv2 packet"),
             Arp => write!(f, "Address Resolution Protocol packet"),
         }
     }
@@ -190,6 +194,7 @@ mod test {
             (Icmpv4TimestampReply, "ICMP Timestamp Reply Error"),
             (Icmpv6, "ICMPv6 Packet Error"),
             (Igmpv1, "IGMPv1 Packet Error"),
+            (Igmpv2, "IGMPv2 Packet Error"),
             (Arp, "Address Resolution Protocol Packet Error"),
         ];
         for test in tests {
@@ -225,6 +230,7 @@ mod test {
             (Icmpv4TimestampReply, "ICMP timestamp reply message"),
             (Icmpv6, "ICMPv6 packet"),
             (Igmpv1, "IGMPv1 packet"),
+            (Igmpv2, "IGMPv2 packet"),
             (Arp, "Address Resolution Protocol packet"),
         ];
         for test in tests {
