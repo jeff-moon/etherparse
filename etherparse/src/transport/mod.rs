@@ -43,8 +43,14 @@ pub use igmp_headers::*;
 mod igmpv3_query_header;
 pub use igmpv3_query_header::*;
 
+mod igmpv3_query_slice;
+pub use igmpv3_query_slice::*;
+
 mod igmpv3_report_header;
 pub use igmpv3_report_header::*;
+
+mod igmpv3_report_slice;
+pub use igmpv3_report_slice::*;
 
 /// Module containing IGMPv3 related types and constants.
 pub mod igmp;
