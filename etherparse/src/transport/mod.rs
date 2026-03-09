@@ -28,6 +28,9 @@ pub use icmpv6_type::*;
 mod igmpv1_header;
 pub use igmpv1_header::*;
 
+mod igmpv1_slice;
+pub use igmpv1_slice::*;
+
 mod igmpv2_header;
 pub use igmpv2_header::*;
 
