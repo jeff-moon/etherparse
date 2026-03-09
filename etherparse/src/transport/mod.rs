@@ -37,6 +37,9 @@ pub use igmpv3_query_header::*;
 mod igmpv3_report_header;
 pub use igmpv3_report_header::*;
 
+/// Module containing IGMPv3 related types and constants.
+pub mod igmp;
+
 mod tcp_header;
 pub use tcp_header::*;
 
