@@ -40,6 +40,9 @@ pub use igmpv2_slice::*;
 mod igmp_headers;
 pub use igmp_headers::*;
 
+mod igmp_slice;
+pub use igmp_slice::*;
+
 mod igmpv3_query_header;
 pub use igmpv3_query_header::*;
 
