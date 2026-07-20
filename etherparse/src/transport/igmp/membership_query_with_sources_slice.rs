@@ -34,8 +34,19 @@ impl<'a> MembershipQueryWithSourcesSlice<'a> {
     ///
     /// # Safety
     ///
-    /// The caller must guarantee that `slice` is at least
-    /// [`MembershipQueryWithSourcesHeader::LEN`] (12) bytes long.
+    /// The caller must guarantee that `slice` contains the complete
+    /// declared payload:
+    ///
+    /// * at least [`MembershipQueryWithSourcesHeader::LEN`] (12) bytes for
+    ///   the header, and
+    /// * additionally `num_of_sources * 4` bytes for the source address
+    ///   list, where `num_of_sources` is the `u16` read from bytes 10..12
+    ///   of the header.
+    ///
+    /// In other words `slice.len()` must be at least
+    /// `12 + num_of_sources * 4` so that all source addresses accessed by
+    /// [`MembershipQueryWithSourcesSlice::source_addrs_bytes`] are in
+    /// bounds.
     #[inline]
     pub(crate) unsafe fn from_slice_unchecked(
         slice: &'a [u8],
