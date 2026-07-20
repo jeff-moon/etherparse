@@ -1675,6 +1675,61 @@ impl PacketBuilderStep<IpHeaders> {
         }
     }
 
+    /// Adds an IGMP header based on the given [`IgmpType`].
+    ///
+    /// The checksum is calculated automatically during serialization.
+    ///
+    /// # Example
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use etherparse::{PacketBuilder, IgmpType, igmp::MembershipReportV2Type};
+    /// #
+    /// let builder = PacketBuilder::
+    ///    ipv4([192,168,1,1],  // source ip
+    ///          [192,168,1,2], // destination ip
+    ///          20)            // time to life
+    ///    .igmp(IgmpType::MembershipReportV2(MembershipReportV2Type {
+    ///        group_address: [224, 0, 0, 1].into(),
+    ///    }));
+    ///
+    /// // the payload is written after the IGMP header
+    /// let payload = [];
+    ///
+    /// // get some memory to store the result
+    /// let mut result = Vec::<u8>::with_capacity(
+    ///                     builder.size(payload.len()));
+    ///
+    /// // serialize
+    /// builder.write(&mut result, &payload).unwrap();
+    /// ```
+    pub fn igmp(mut self, igmp_type: IgmpType) -> PacketBuilderStep<IgmpHeader> {
+        self.state.transport_header = Some(TransportHeader::Igmp(IgmpHeader {
+            igmp_type,
+            checksum: 0, // calculated later
+        }));
+        //return for next step
+        PacketBuilderStep {
+            state: self.state,
+            _marker: marker::PhantomData::<IgmpHeader> {},
+        }
+    }
+
+    /// Adds an IGMP header.
+    ///
+    /// The checksum is calculated automatically during serialization
+    /// (the `checksum` field of the given header is ignored & overwritten).
+    pub fn igmp_header(mut self, mut igmp_header: IgmpHeader) -> PacketBuilderStep<IgmpHeader> {
+        igmp_header.checksum = 0; // calculated later
+        self.state.transport_header = Some(TransportHeader::Igmp(igmp_header));
+        //return for next step
+        PacketBuilderStep {
+            state: self.state,
+            _marker: marker::PhantomData::<IgmpHeader> {},
+        }
+    }
+
     /// Write all the headers and the payload with the given ip number.
     ///
     /// `last_next_header_ip_number` will be set in the last extension header
@@ -1789,6 +1844,45 @@ impl PacketBuilderStep<Icmpv4Header> {
 
 impl PacketBuilderStep<Icmpv6Header> {
     ///Write all the headers and the payload.
+    #[cfg(feature = "std")]
+    pub fn write<T: std::io::Write + Sized>(
+        self,
+        writer: &mut T,
+        payload: &[u8],
+    ) -> Result<(), BuildWriteError> {
+        final_write_with_net::<_, _, BuildWriteError>(self, &mut IoWriter(writer), payload)
+    }
+
+    /// Write all the headers and the payload to a [`Vec<u8>`].
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    pub fn write_to_vec(
+        self,
+        buffer: &mut Vec<u8>,
+        payload: &[u8],
+    ) -> Result<(), BuildVecWriteError> {
+        final_write_with_net::<_, _, BuildVecWriteError>(self, &mut VecWriter(buffer), payload)
+    }
+
+    /// Write all the headers and the payload to a byte slice.
+    ///
+    /// Returns the number of bytes written.
+    pub fn write_to_slice(
+        self,
+        buffer: &mut [u8],
+        payload: &[u8],
+    ) -> Result<usize, BuildSliceWriteError> {
+        final_write_to_slice(self, buffer, payload)
+    }
+
+    ///Returns the size of the packet when it is serialized
+    pub fn size(&self, payload_size: usize) -> usize {
+        final_size(self, payload_size)
+    }
+}
+
+impl PacketBuilderStep<IgmpHeader> {
+    /// Write all the headers and the payload.
     #[cfg(feature = "std")]
     pub fn write<T: std::io::Write + Sized>(
         self,
@@ -2162,6 +2256,7 @@ where
         Some(Tcp(_)) => {}
         Some(Icmpv4(_)) => {}
         Some(Icmpv6(_)) => {}
+        Some(Igmp(_)) => {}
         None => {}
     }
 
@@ -2180,6 +2275,7 @@ where
                 ip.protocol = ip_exts.set_next_headers(match &transport {
                     Icmpv4(_) => ip_number::ICMP,
                     Icmpv6(_) => ip_number::IPV6_ICMP,
+                    Igmp(_) => ip_number::IGMP,
                     Udp(_) => ip_number::UDP,
                     Tcp(_) => ip_number::TCP,
                 });
@@ -2210,6 +2306,7 @@ where
                 ip.next_header = ip_exts.set_next_headers(match &transport {
                     Icmpv4(_) => ip_number::ICMP,
                     Icmpv6(_) => ip_number::IPV6_ICMP,
+                    Igmp(_) => ip_number::IGMP,
                     Udp(_) => ip_number::UDP,
                     Tcp(_) => ip_number::TCP,
                 });
@@ -2241,6 +2338,7 @@ where
             TransportHeader::Icmpv6(value) => {
                 writer.write_all(&value.to_bytes()).map_err(E::from)?
             }
+            TransportHeader::Igmp(value) => writer.write_all(&value.to_bytes()).map_err(E::from)?,
             TransportHeader::Udp(value) => writer.write_all(&value.to_bytes()).map_err(E::from)?,
             TransportHeader::Tcp(value) => writer.write_all(&value.to_bytes()).map_err(E::from)?,
         }
@@ -2271,6 +2369,7 @@ fn final_size<B>(builder: &PacketBuilderStep<B>, payload_size: usize) -> usize {
     } + match builder.state.transport_header {
         Some(Icmpv4(ref value)) => value.header_len(),
         Some(Icmpv6(ref value)) => value.header_len(),
+        Some(Igmp(ref value)) => value.header_len(),
         Some(Udp(_)) => UdpHeader::LEN,
         Some(Tcp(ref value)) => value.header_len(),
         None => 0,

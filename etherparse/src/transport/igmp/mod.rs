@@ -1,11 +1,17 @@
 mod group_address;
 pub use group_address::*;
 
+mod leave_group_slice;
+pub use leave_group_slice::*;
+
 mod leave_group_type;
 pub use leave_group_type::*;
 
 mod max_response_code;
 pub use max_response_code::*;
+
+mod membership_query_slice;
+pub use membership_query_slice::*;
 
 mod membership_query_type;
 pub use membership_query_type::*;
@@ -13,14 +19,26 @@ pub use membership_query_type::*;
 mod membership_query_with_sources_header;
 pub use membership_query_with_sources_header::*;
 
+mod membership_query_with_sources_slice;
+pub use membership_query_with_sources_slice::*;
+
+mod membership_report_v1_slice;
+pub use membership_report_v1_slice::*;
+
 mod membership_report_v1_type;
 pub use membership_report_v1_type::*;
+
+mod membership_report_v2_slice;
+pub use membership_report_v2_slice::*;
 
 mod membership_report_v2_type;
 pub use membership_report_v2_type::*;
 
 mod membership_report_v3_header;
 pub use membership_report_v3_header::*;
+
+mod membership_report_v3_slice;
+pub use membership_report_v3_slice::*;
 
 mod qrv;
 pub use qrv::*;
@@ -33,6 +51,9 @@ pub use report_group_record_v3_header::*;
 
 mod report_group_record_v3_slice;
 pub use report_group_record_v3_slice::*;
+
+mod igmp_unknown_slice;
+pub use igmp_unknown_slice::*;
 
 mod unknown_header;
 pub use unknown_header::*;

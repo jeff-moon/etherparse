@@ -1474,7 +1474,7 @@ mod test {
         for fragmented in [false, true] {
             let ipv4 = {
                 let mut ipv4 =
-                    Ipv4Header::new(0, 1, 2.into(), [3, 4, 5, 6], [7, 8, 9, 10]).unwrap();
+                    Ipv4Header::new(0, 1, 3.into(), [3, 4, 5, 6], [7, 8, 9, 10]).unwrap();
                 ipv4.more_fragments = fragmented;
                 ipv4
             };
@@ -2123,6 +2123,10 @@ mod test {
                     Some(S::Icmpv6(icmpv6)) => {
                         assert_eq!(&test.transport, &Some(H::Icmpv6(icmpv6.header())));
                         assert_eq!(icmpv6.payload(), expected_payload);
+                    }
+                    Some(S::Igmp(igmp)) => {
+                        assert_eq!(&test.transport, &Some(H::Igmp(igmp.header())));
+                        assert_eq!(igmp.payload(), expected_payload);
                     }
                     Some(S::Udp(s)) => {
                         assert_eq!(&test.transport, &Some(H::Udp(s.to_header())));

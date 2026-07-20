@@ -17,6 +17,7 @@ Currently supported are:
 * UDP
 * TCP
 * ICMP & ICMPv6 (not all message types are supported)
+* IGMP (v1, v2 & v3)
 
 Reconstruction of fragmented IP packets is also supported, but requires allocations.
 
@@ -114,6 +115,7 @@ It is also possible to only slice one packet layer:
 * [`TcpSlice::from_slice`](https://docs.rs/etherparse/0.20.3/etherparse/struct.TcpSlice.html#method.from_slice)
 * [`Icmpv4Slice::from_slice`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv4Slice.html#method.from_slice)
 * [`Icmpv6Slice::from_slice`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv6Slice.html#method.from_slice)
+* [`IgmpSlice::from_slice`](https://docs.rs/etherparse/0.20.3/etherparse/struct.IgmpSlice.html#method.from_slice)
 
 The resulting data types allow access to both the header(s) and the payload of the layer
 and will automatically limit the length of payload if the layer has a length field limiting the
@@ -158,6 +160,7 @@ And for deserialization into the corresponding header structs have a look at:
 * [`TcpHeader::read`](https://docs.rs/etherparse/0.20.3/etherparse/struct.TcpHeader.html#method.read) & [`TcpHeader::from_slice`](https://docs.rs/etherparse/0.20.3/etherparse/struct.TcpHeader.html#method.from_slice)
 * [`Icmpv4Header::read`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv4Header.html#method.read) & [`Icmpv4Header::from_slice`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv4Header.html#method.from_slice)
 * [`Icmpv6Header::read`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv6Header.html#method.read) & [`Icmpv6Header::from_slice`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv6Header.html#method.from_slice)
+* [`IgmpHeader::from_slice`](https://docs.rs/etherparse/0.20.3/etherparse/struct.IgmpHeader.html#method.from_slice)
 
 ## How to generate fake packet data?
 
@@ -216,6 +219,7 @@ Read the documentations of the different methods for a more details:
 * [`TcpHeader::to_bytes`](https://docs.rs/etherparse/0.20.3/etherparse/struct.TcpHeader.html#method.to_bytes) & [`TcpHeader::write`](https://docs.rs/etherparse/0.20.3/etherparse/struct.TcpHeader.html#method.write)
 * [`Icmpv4Header::to_bytes`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv4Header.html#method.to_bytes) & [`Icmpv4Header::write`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv4Header.html#method.write)
 * [`Icmpv6Header::to_bytes`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv6Header.html#method.to_bytes) & [`Icmpv6Header::write`](https://docs.rs/etherparse/0.20.3/etherparse/struct.Icmpv6Header.html#method.write)
+* [`IgmpHeader::to_bytes`](https://docs.rs/etherparse/0.20.3/etherparse/struct.IgmpHeader.html#method.to_bytes) & [`IgmpHeader::write`](https://docs.rs/etherparse/0.20.3/etherparse/struct.IgmpHeader.html#method.write)
 
 ## References
 * Darpa Internet Program Protocol Specification [RFC 791](https://tools.ietf.org/html/rfc791)

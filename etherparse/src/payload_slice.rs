@@ -30,6 +30,10 @@ pub enum PayloadSlice<'a> {
     /// Payload part of an ICMP V4 message. Check [`crate::Icmpv6Type`]
     /// for a description what will be part of the payload.
     Icmpv6(&'a [u8]),
+
+    /// Payload part of an IGMP message. Check [`crate::IgmpType`]
+    /// for a description what will be part of the payload.
+    Igmp(&'a [u8]),
 }
 
 impl<'a> PayloadSlice<'a> {
@@ -43,6 +47,7 @@ impl<'a> PayloadSlice<'a> {
             PayloadSlice::Tcp(s) => s,
             PayloadSlice::Icmpv4(s) => s,
             PayloadSlice::Icmpv6(s) => s,
+            PayloadSlice::Igmp(s) => s,
         }
     }
 }
@@ -113,5 +118,6 @@ mod test {
         assert_eq!(Tcp(&payload).slice(), &payload);
         assert_eq!(Icmpv4(&payload).slice(), &payload);
         assert_eq!(Icmpv6(&payload).slice(), &payload);
+        assert_eq!(Igmp(&payload).slice(), &payload);
     }
 }

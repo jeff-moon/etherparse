@@ -10,6 +10,7 @@
 //! * UDP
 //! * TCP
 //! * ICMP & ICMPv6 (not all message types are supported)
+//! * IGMP (v1, v2 & v3)
 //!
 //! Reconstruction of fragmented IP packets is also supported, but requires allocations.
 //!
@@ -137,6 +138,7 @@
 //! * [`TcpSlice::from_slice`]
 //! * [`Icmpv4Slice::from_slice`]
 //! * [`Icmpv6Slice::from_slice`]
+//! * [`IgmpSlice::from_slice`]
 //!
 //! The resulting data types allow access to both the header(s) and the payload of the layer
 //! and will automatically limit the length of payload if the layer has a length field limiting the
@@ -182,6 +184,7 @@
 //! * [`TcpHeader::read`] & [`TcpHeader::from_slice`]
 //! * [`Icmpv4Header::read`] & [`Icmpv4Header::from_slice`]
 //! * [`Icmpv6Header::read`] & [`Icmpv6Header::from_slice`]
+//! * [`IgmpHeader::from_slice`]
 //!
 //! # How to generate fake packet data?
 //!
@@ -247,6 +250,7 @@
 //! * [`TcpHeader::to_bytes`] & [`TcpHeader::write`]
 //! * [`Icmpv4Header::to_bytes`] & [`Icmpv4Header::write`]
 //! * [`Icmpv6Header::to_bytes`] & [`Icmpv6Header::write`]
+//! * [`IgmpHeader::to_bytes`] & [`IgmpHeader::write`]
 //!
 //! # References
 //! * Darpa Internet Program Protocol Specification [RFC 791](https://tools.ietf.org/html/rfc791)

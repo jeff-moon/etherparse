@@ -141,6 +141,7 @@ impl TestPacket {
             Some(Tcp(_)) => {}
             Some(Icmpv4(_)) => {}
             Some(Icmpv6(_)) => {}
+            Some(Igmp(_)) => {}
         }
     }
 

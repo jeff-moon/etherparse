@@ -84,7 +84,7 @@ impl<'a> ReportGroupRecordV3Slice<'a> {
     /// Decode the fixed header into a [`ReportGroupRecordV3Header`].
     #[inline]
     pub fn header(&self) -> ReportGroupRecordV3Header {
-        // SAFETY: from_slice guarantees at least LEN bytes.
+        // `from_slice` guarantees at least LEN bytes, so this cannot fail.
         let (header, _) = ReportGroupRecordV3Header::from_slice(self.slice).unwrap();
         header
     }
@@ -134,6 +134,14 @@ impl<'a> ReportGroupRecordV3Slice<'a> {
         let len = usize::from(self.num_of_sources()) * 4;
         // SAFETY: Safe as from_slice validates the total record length.
         unsafe { core::slice::from_raw_parts(self.slice.as_ptr().add(start), len) }
+    }
+
+    /// Returns an iterator over the source addresses as `[u8; 4]` arrays.
+    #[inline]
+    pub fn source_addresses(&self) -> impl ExactSizeIterator<Item = [u8; 4]> + 'a {
+        self.source_addrs_bytes()
+            .chunks_exact(4)
+            .map(|c| [c[0], c[1], c[2], c[3]])
     }
 
     /// Returns the auxiliary data bytes.
@@ -197,6 +205,8 @@ impl<'a> Iterator for ReportGroupRecordV3SliceIter<'a> {
     }
 }
 
+impl core::iter::FusedIterator for ReportGroupRecordV3SliceIter<'_> {}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -250,6 +260,9 @@ mod test {
         assert_eq!(rest, &[0xFF]);
         assert_eq!(slice.num_of_sources(), 2);
         assert_eq!(slice.source_addrs_bytes(), &[10, 0, 0, 1, 10, 0, 0, 2]);
+        let addrs: Vec<_> = slice.source_addresses().collect();
+        assert_eq!(addrs, vec![[10, 0, 0, 1], [10, 0, 0, 2]]);
+        assert_eq!(slice.source_addresses().len(), 2);
     }
 
     #[test]
