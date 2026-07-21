@@ -2,6 +2,7 @@
 [![docs.rs](https://docs.rs/etherparse/badge.svg)](https://docs.rs/etherparse)
 [![Build Status Github](https://github.com/JulianSchmid/etherparse/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/JulianSchmid/etherparse/actions/workflows/main.yml)
 [![Build Status Gitlab](https://gitlab.com/julian.schmid/etherparse/badges/master/pipeline.svg)](https://gitlab.com/julian.schmid/etherparse/-/commits/master)
+[![Coverage Status](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/JulianSchmid/8b0f5c110cd7a64899e13a45abcc98ff/raw/etherparse-coverage.json)](https://github.com/JulianSchmid/etherparse/actions/workflows/coverage.yml)
 
 # etherparse
 

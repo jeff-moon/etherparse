@@ -26,9 +26,20 @@ jobs:
     - name: Determine coverage
       run: coverage/coverage.bash
       shell: bash
-    - name: Codecov
-      uses: codecov/codecov-action@v4
+    - name: Extract line coverage percentage
+      id: coverage
+      run: |
+        pct=$(jq '.data[0].totals.lines.percent' target/coverage/export_without_tests.json)
+        printf 'pct=%.2f\n' "$pct" >> "$GITHUB_OUTPUT"
+    - name: Update coverage badge gist
+      if: github.ref == 'refs/heads/master'
+      uses: schneegans/dynamic-badges-action@v1.7.0
       with:
-        files: target/coverage/export.lcov.txt
-        fail_ci_if_error: true
-        token: ${{ secrets.CODECOV_TOKEN }}
+        auth: ${{ secrets.GIST_TOKEN }}
+        gistID: 8b0f5c110cd7a64899e13a45abcc98ff
+        filename: etherparse-coverage.json
+        label: coverage
+        message: ${{ steps.coverage.outputs.pct }}%
+        valColorRange: ${{ steps.coverage.outputs.pct }}
+        minColorRange: 0
+        maxColorRange: 100
