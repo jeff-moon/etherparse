@@ -386,6 +386,13 @@ impl IgmpHeader {
         }
     }
 
+    /// Write the IGMP header to the given writer.
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    pub fn write<T: std::io::Write + Sized>(&self, writer: &mut T) -> Result<(), std::io::Error> {
+        writer.write_all(self.to_bytes().as_slice())
+    }
+
     /// Converts the header to on-the-wire bytes.
     pub fn to_bytes(&self) -> ArrayVec<u8, { Self::MAX_LEN }> {
         use IgmpType::*;

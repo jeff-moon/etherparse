@@ -96,6 +96,7 @@ fn main() {
             match value.transport {
                 Some(Icmpv4(value)) => println!(" Icmpv4 {:?}", value),
                 Some(Icmpv6(value)) => println!(" Icmpv6 {:?}", value),
+                Some(Igmp(value)) => println!(" Igmp {:?}", value),
                 Some(Udp(value)) => println!(
                     "  UDP {:?} -> {:?}",
                     value.source_port(),

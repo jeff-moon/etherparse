@@ -52,6 +52,14 @@ pub enum LaxPayloadSlice<'a> {
         incomplete: bool,
     },
 
+    /// Payload part of an IGMP message. Check [`crate::IgmpType`]
+    /// for a description what will be part of the payload.
+    Igmp {
+        payload: &'a [u8],
+        /// True if the payload has been cut off.
+        incomplete: bool,
+    },
+
     /// Linux SLL payload.
     LinuxSll(LinuxSllPayloadSlice<'a>),
 }
@@ -79,6 +87,10 @@ impl<'a> LaxPayloadSlice<'a> {
                 incomplete: _,
             } => payload,
             LaxPayloadSlice::Icmpv6 {
+                payload,
+                incomplete: _,
+            } => payload,
+            LaxPayloadSlice::Igmp {
                 payload,
                 incomplete: _,
             } => payload,
@@ -194,6 +206,14 @@ mod test {
         );
         assert_eq!(
             Icmpv6 {
+                payload: &payload,
+                incomplete: false
+            }
+            .slice(),
+            &payload
+        );
+        assert_eq!(
+            Igmp {
                 payload: &payload,
                 incomplete: false
             }

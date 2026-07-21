@@ -65,6 +65,7 @@ impl<'a> ComponentTest<'a> {
         match &self.transport {
             Some(TransportHeader::Icmpv6(header)) => header.write(&mut buffer).unwrap(),
             Some(TransportHeader::Icmpv4(header)) => header.write(&mut buffer).unwrap(),
+            Some(TransportHeader::Igmp(header)) => header.write(&mut buffer).unwrap(),
             Some(TransportHeader::Udp(header)) => header.write(&mut buffer).unwrap(),
             Some(TransportHeader::Tcp(header)) => header.write(&mut buffer).unwrap(),
             None => {}
@@ -405,6 +406,7 @@ impl<'a> ComponentTest<'a> {
                     Some(TransportHeader::Icmpv4(actual.header())),
                 Some(TransportSlice::Icmpv6(actual)) =>
                     Some(TransportHeader::Icmpv6(actual.header())),
+                Some(TransportSlice::Igmp(actual)) => Some(TransportHeader::Igmp(actual.header())),
                 Some(TransportSlice::Udp(actual)) => Some(TransportHeader::Udp(actual.to_header())),
                 Some(TransportSlice::Tcp(actual)) => Some(TransportHeader::Tcp(actual.to_header())),
                 None => None,
@@ -425,6 +427,9 @@ impl<'a> ComponentTest<'a> {
             }
             Some(TransportSlice::Icmpv6(icmpv6)) => {
                 assert_eq!(&self.payload[..], icmpv6.payload());
+            }
+            Some(TransportSlice::Igmp(igmp)) => {
+                assert_eq!(&self.payload[..], igmp.payload());
             }
             Some(TransportSlice::Udp(udp)) => {
                 assert_eq!(&self.payload[..], udp.payload());
@@ -471,6 +476,7 @@ impl<'a> ComponentTest<'a> {
         tcp: &TcpHeader,
         icmpv4: &Icmpv4Header,
         icmpv6: &Icmpv6Header,
+        igmp: &IgmpHeader,
     ) {
         // add vlan
         {
@@ -489,11 +495,12 @@ impl<'a> ComponentTest<'a> {
             if !test.link_exts.is_full() {
                 test.run_link_exts(
                     vlans, macsecs, arp, ipv4, ipv4_ext, ipv6, ipv6_ext, udp, tcp, icmpv4, icmpv6,
+                    igmp,
                 );
             }
             test.run_arp(arp);
-            test.run_ipv4(ipv4, ipv4_ext, udp, tcp, icmpv4, icmpv6);
-            test.run_ipv6(ipv6, ipv6_ext, udp, tcp, icmpv4, icmpv6);
+            test.run_ipv4(ipv4, ipv4_ext, udp, tcp, icmpv4, icmpv6, igmp);
+            test.run_ipv6(ipv6, ipv6_ext, udp, tcp, icmpv4, icmpv6, igmp);
         }
 
         // add macsec
@@ -513,11 +520,12 @@ impl<'a> ComponentTest<'a> {
             if !test.link_exts.is_full() {
                 test.run_link_exts(
                     vlans, macsecs, arp, ipv4, ipv4_ext, ipv6, ipv6_ext, udp, tcp, icmpv4, icmpv6,
+                    igmp,
                 );
             }
             test.run_arp(arp);
-            test.run_ipv4(ipv4, ipv4_ext, udp, tcp, icmpv4, icmpv6);
-            test.run_ipv6(ipv6, ipv6_ext, udp, tcp, icmpv4, icmpv6);
+            test.run_ipv4(ipv4, ipv4_ext, udp, tcp, icmpv4, icmpv6, igmp);
+            test.run_ipv6(ipv6, ipv6_ext, udp, tcp, icmpv4, icmpv6, igmp);
         }
     }
 
@@ -536,6 +544,7 @@ impl<'a> ComponentTest<'a> {
         tcp: &TcpHeader,
         icmpv4: &Icmpv4Header,
         icmpv6: &Icmpv6Header,
+        igmp: &IgmpHeader,
     ) {
         // fragmenting
         {
@@ -565,7 +574,7 @@ impl<'a> ComponentTest<'a> {
                 non_frag.protocol = ip_exts.set_next_headers(ip.protocol);
                 NetHeaders::Ipv4(non_frag, ip_exts)
             });
-            test.run_transport(udp, tcp, icmpv4, icmpv6);
+            test.run_transport(udp, tcp, icmpv4, icmpv6, igmp);
         }
     }
 
@@ -577,6 +586,7 @@ impl<'a> ComponentTest<'a> {
         tcp: &TcpHeader,
         icmpv4: &Icmpv4Header,
         icmpv6: &Icmpv6Header,
+        igmp: &IgmpHeader,
     ) {
         // fragmenting
         {
@@ -612,7 +622,7 @@ impl<'a> ComponentTest<'a> {
                 ip.next_header = non_frag.set_next_headers(ip.next_header);
                 NetHeaders::Ipv6(ip, non_frag)
             });
-            test.run_transport(udp, tcp, icmpv4, icmpv6);
+            test.run_transport(udp, tcp, icmpv4, icmpv6, igmp);
         }
     }
 
@@ -622,9 +632,22 @@ impl<'a> ComponentTest<'a> {
         tcp: &TcpHeader,
         icmpv4: &Icmpv4Header,
         icmpv6: &Icmpv6Header,
+        igmp: &IgmpHeader,
     ) {
         // unknown transport layer
         self.run();
+
+        // igmp
+        {
+            let mut test = self.clone();
+            test.net
+                .as_mut()
+                .unwrap()
+                .try_set_next_headers(ip_number::IGMP)
+                .unwrap();
+            test.transport = Some(TransportHeader::Igmp(igmp.clone()));
+            test.run()
+        }
 
         // udp
         {
@@ -730,6 +753,7 @@ proptest! {
                          ref tcp in tcp_any(),
                          ref icmpv4 in icmpv4_header_any(),
                          ref icmpv6 in icmpv6_header_any(),
+                         ref igmp in igmp_header_any(),
                          ref payload in proptest::collection::vec(any::<u8>(), 0..1024))
     {
         let setup_eth = || -> ComponentTest {
@@ -745,14 +769,14 @@ proptest! {
         // ethernet 2: standalone, ipv4, ipv6
         setup_eth().run();
         setup_eth().run_arp(arp);
-        setup_eth().run_ipv4(ipv4, ipv4_exts, udp, tcp, icmpv4, icmpv6);
-        setup_eth().run_ipv6(ipv6, ipv6_exts, udp, tcp, icmpv4, icmpv6);
+        setup_eth().run_ipv4(ipv4, ipv4_exts, udp, tcp, icmpv4, icmpv6, igmp);
+        setup_eth().run_ipv6(ipv6, ipv6_exts, udp, tcp, icmpv4, icmpv6, igmp);
 
         // link exts
         {
             let vlans = [vlan0.clone(), vlan1.clone(), vlan2.clone()];
             let macsecs = [macsec0.clone(), macsec1.clone(), macsec2.clone()];
-            setup_eth().run_link_exts(&vlans[..], &macsecs[..], arp, ipv4, ipv4_exts, ipv6, ipv6_exts, udp, tcp, icmpv4, icmpv6);
+            setup_eth().run_link_exts(&vlans[..], &macsecs[..], arp, ipv4, ipv4_exts, ipv6, ipv6_exts, udp, tcp, icmpv4, icmpv6, igmp);
         }
     }
 }

@@ -476,6 +476,14 @@ fn read_transport(
                         PayloadSlice::Icmpv6(value.payload()),
                     )
                 }),
+            IGMP => IgmpSlice::from_slice(ip_payload.payload)
+                .map_err(add_len_source)
+                .map(|value| {
+                    (
+                        Some(TransportHeader::Igmp(value.header())),
+                        PayloadSlice::Igmp(value.payload()),
+                    )
+                }),
             UDP => UdpHeader::from_slice(ip_payload.payload)
                 .map_err(add_len_source)
                 .map(|value| {
@@ -914,7 +922,7 @@ mod test {
         for fragmented in [false, true] {
             let ipv4 = {
                 let mut ipv4 =
-                    Ipv4Header::new(0, 1, 2.into(), [3, 4, 5, 6], [7, 8, 9, 10]).unwrap();
+                    Ipv4Header::new(0, 1, 3.into(), [3, 4, 5, 6], [7, 8, 9, 10]).unwrap();
                 ipv4.more_fragments = fragmented;
                 ipv4
             };

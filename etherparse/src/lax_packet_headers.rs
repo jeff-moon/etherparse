@@ -132,6 +132,12 @@ impl<'a> LaxPacketHeaders<'a> {
     ///                     println!("  Icmpv6 payload incomplete (length in IP header indicated more data should be present)");
     ///                 }
     ///             }
+    ///             LaxPayloadSlice::Igmp{ payload, incomplete } => {
+    ///                 println!("Igmp payload: {:?}", payload);
+    ///                 if incomplete {
+    ///                     println!("  Igmp payload incomplete (length in IP header indicated more data should be present)");
+    ///                 }
+    ///             }
     ///             LaxPayloadSlice::LinuxSll(linux_sll) => {
     ///                 println!("Linux SLL payload (protocol type {:?}): {:?}", linux_sll.protocol_type, linux_sll.payload);
     ///             }
@@ -256,6 +262,12 @@ impl<'a> LaxPacketHeaders<'a> {
     ///         println!("Icmpv6 payload: {:?}", payload);
     ///         if incomplete {
     ///             println!("  Icmpv6 payload incomplete (length in IP header indicated more data should be present)");
+    ///         }
+    ///     }
+    ///     LaxPayloadSlice::Igmp{ payload, incomplete } => {
+    ///         println!("Igmp payload: {:?}", payload);
+    ///         if incomplete {
+    ///             println!("  Igmp payload incomplete (length in IP header indicated more data should be present)");
     ///         }
     ///     }
     ///     LaxPayloadSlice::LinuxSll(linux_sll) => {
@@ -516,6 +528,12 @@ impl<'a> LaxPacketHeaders<'a> {
     ///                     println!("  Icmpv6 payload incomplete (length in IP header indicated more data should be present)");
     ///                 }
     ///             }
+    ///             LaxPayloadSlice::Igmp{ payload, incomplete } => {
+    ///                 println!("Igmp payload: {:?}", payload);
+    ///                 if incomplete {
+    ///                     println!("  Igmp payload incomplete (length in IP header indicated more data should be present)");
+    ///                 }
+    ///             }
     ///         }
     ///     }
     /// }
@@ -630,6 +648,12 @@ impl<'a> LaxPacketHeaders<'a> {
     ///                 println!("Icmpv6 payload: {:?}", payload);
     ///                 if incomplete {
     ///                     println!("  Icmpv6 payload incomplete (length in IP header indicated more data should be present)");
+    ///                 }
+    ///             }
+    ///             LaxPayloadSlice::Igmp{ payload, incomplete } => {
+    ///                 println!("Igmp payload: {:?}", payload);
+    ///                 if incomplete {
+    ///                     println!("  Igmp payload incomplete (length in IP header indicated more data should be present)");
     ///                 }
     ///             }
     ///             LaxPayloadSlice::LinuxSll(linux_sll) => {
@@ -779,6 +803,18 @@ impl<'a> LaxPacketHeaders<'a> {
                     }
                     Err(e) => {
                         self.stop_err = Some((add_len_source(e), Layer::Icmpv6));
+                    }
+                },
+                IGMP => match IgmpSlice::from_slice(ip_payload.payload) {
+                    Ok(i) => {
+                        self.transport = Some(TransportHeader::Igmp(i.header()));
+                        self.payload = LaxPayloadSlice::Igmp {
+                            payload: i.payload(),
+                            incomplete: ip_payload.incomplete,
+                        };
+                    }
+                    Err(e) => {
+                        self.stop_err = Some((add_len_source(e), Layer::Igmp));
                     }
                 },
                 UDP => {
@@ -1423,7 +1459,7 @@ mod test {
         for fragmented in [false, true] {
             let ipv4 = {
                 let mut ipv4 =
-                    Ipv4Header::new(0, 1, 2.into(), [3, 4, 5, 6], [7, 8, 9, 10]).unwrap();
+                    Ipv4Header::new(0, 1, 3.into(), [3, 4, 5, 6], [7, 8, 9, 10]).unwrap();
                 ipv4.more_fragments = fragmented;
                 ipv4
             };
@@ -2110,6 +2146,16 @@ mod test {
                         assert_eq!(
                             actual.payload,
                             LaxPayloadSlice::Icmpv6 {
+                                payload: expected_payload,
+                                incomplete: false
+                            }
+                        );
+                    }
+                    Some(H::Igmp(igmp)) => {
+                        assert_eq!(&test.transport, &Some(H::Igmp(igmp.clone())));
+                        assert_eq!(
+                            actual.payload,
+                            LaxPayloadSlice::Igmp {
                                 payload: expected_payload,
                                 incomplete: false
                             }

@@ -482,6 +482,7 @@ prop_compose! {
 
 static IPV4_KNOWN_PROTOCOLS: &[IpNumber] = &[
     ip_number::ICMP,
+    ip_number::IGMP,
     ip_number::UDP,
     ip_number::TCP,
     ip_number::AUTH,
@@ -580,6 +581,7 @@ prop_compose! {
 
 static IPV6_KNOWN_NEXT_HEADERS: &[IpNumber] = &[
     ip_number::ICMP,
+    ip_number::IGMP,
     ip_number::UDP,
     ip_number::TCP,
     ip_number::IPV6_HOP_BY_HOP,
@@ -881,6 +883,25 @@ prop_compose! {
         ) -> Icmpv4Header
     {
         Icmpv4Header::from_slice(&bytes).unwrap().0
+    }
+}
+
+prop_compose! {
+    /// Generates a simple, fixed-length (8 byte header) IGMP header
+    /// (an IGMPv2 "Membership Report") suitable for round-trip tests
+    /// with arbitrary trailing payloads.
+    pub fn igmp_header_any()
+        (
+            group_address in any::<[u8;4]>(),
+            checksum in any::<u16>(),
+        ) -> IgmpHeader
+    {
+        IgmpHeader {
+            igmp_type: IgmpType::MembershipReportV2(crate::igmp::MembershipReportV2Type {
+                group_address: group_address.into(),
+            }),
+            checksum,
+        }
     }
 }
 

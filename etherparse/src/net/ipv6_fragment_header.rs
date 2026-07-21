@@ -409,7 +409,8 @@ mod test {
         // set. The offset fills bytes 2..3 bits 15..3 and M is bit 0 (bits
         // 2..1 are reserved & zero).
         {
-            let header = Ipv6FragmentHeader::new(UDP, IpFragOffset::try_new(8191).unwrap(), true, 0);
+            let header =
+                Ipv6FragmentHeader::new(UDP, IpFragOffset::try_new(8191).unwrap(), true, 0);
             let bytes = [UDP.0, 0, 0b1111_1111, 0b1111_1001, 0, 0, 0, 0];
             assert_eq!(header.to_bytes(), bytes);
             assert_eq!(Ipv6FragmentHeader::from_slice(&bytes).unwrap().0, header);

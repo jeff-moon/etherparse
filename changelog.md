@@ -1,5 +1,16 @@
 # Changelog:
 
+## Unreleased
+
+* Added zero-copy IGMP support (IGMPv1, IGMPv2 & IGMPv3):
+  * `IgmpSlice`, an enum with one zero-copy variant per message type (`MembershipQuery`, `MembershipQueryWithSources`, `MembershipReportV1`, `MembershipReportV2`, `MembershipReportV3`, `LeaveGroup` & `Unknown`), plus common accessors (`header`, `payload`, `slice`, `checksum`, `is_checksum_valid`).
+  * Per-variant slice types (`MembershipQuerySlice`, `MembershipQueryWithSourcesSlice`, `MembershipReportV1Slice`, `MembershipReportV2Slice`, `MembershipReportV3Slice`, `LeaveGroupSlice` & `IgmpUnknownSlice`) with typed field accessors. Variable-length data is exposed where it exists: `MembershipReportV3Slice::group_records` and `MembershipQueryWithSourcesSlice::source_addresses` / `source_addrs_bytes` (no longer `Option`-returning).
+  * `ReportGroupRecordV3Slice` & `ReportGroupRecordV3SliceIter` for iterating IGMPv3 group records (incl. typed `source_addresses`).
+  * Integrated IGMP into the transport layer parsing & building:
+    * New enum variants `TransportSlice::Igmp`, `TransportHeader::Igmp`, `PayloadSlice::Igmp` & `LaxPayloadSlice::Igmp`.
+    * `SlicedPacket`, `LaxSlicedPacket`, `PacketHeaders` & `LaxPacketHeaders` now decode `ip_number::IGMP` payloads.
+    * `PacketBuilder` gained `igmp` & `igmp_header` setters and `IgmpHeader::write`.
+
 ## 0.15.0
 
 * Added Linux SLL Support (thanks to @RabadanDotDev)
