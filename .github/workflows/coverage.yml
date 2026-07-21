@@ -17,18 +17,42 @@ jobs:
         toolchain: stable
         override: true
         components: llvm-tools-preview
-    - uses: actions-rs/cargo@v1
-      with:
-        command: install
-        args: cargo-binutils rustfilt
+    - name: Install coverage tools
+      # cargo-binutils 0.4.0 panics with clap 4.x ("no-default-features's
+      # ArgAction ..."), which makes every `cargo cov`/`cargo profdata` call
+      # abort and silently produces empty coverage output (0.00%). Pin to the
+      # last known-good release and use --locked so a future dependency
+      # release cannot reintroduce the breakage.
+      run: |
+        cargo install cargo-binutils --version 0.3.6 --locked
+        cargo install rustfilt --locked
     - name: Install jq
       run: sudo apt install jq
     - name: Determine coverage
       run: coverage/coverage.bash
       shell: bash
-    - name: Codecov
-      uses: codecov/codecov-action@v4
+    - name: Extract line coverage percentage
+      id: coverage
+      run: |
+        set -euo pipefail
+        json=target/coverage/export_without_tests.json
+        if [ ! -s "$json" ]; then
+          echo "::error::coverage export '$json' is missing or empty" >&2
+          exit 1
+        fi
+        # `jq -e` exits non-zero when the value is null/absent, so a broken
+        # coverage run fails loudly instead of publishing a bogus 0.00% badge.
+        pct=$(jq -e '.data[0].totals.lines.percent' "$json")
+        printf 'pct=%.2f\n' "$pct" >> "$GITHUB_OUTPUT"
+    - name: Update coverage badge gist
+      if: github.ref == 'refs/heads/master'
+      uses: schneegans/dynamic-badges-action@v1.7.0
       with:
-        files: target/coverage/export.lcov.txt
-        fail_ci_if_error: true
-        token: ${{ secrets.CODECOV_TOKEN }}
+        auth: ${{ secrets.GIST_TOKEN }}
+        gistID: 8b0f5c110cd7a64899e13a45abcc98ff
+        filename: etherparse-coverage.json
+        label: coverage
+        message: ${{ steps.coverage.outputs.pct }}%
+        valColorRange: ${{ steps.coverage.outputs.pct }}
+        minColorRange: 0
+        maxColorRange: 100
