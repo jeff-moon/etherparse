@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+* Added zero-copy MLD (Multicast Listener Discovery) support (MLDv1 & MLDv2):
+  * `MldSlice`, an enum with one zero-copy variant per message type (`MulticastListenerQuery`, `MulticastListenerQueryWithSources`, `MulticastListenerReport`, `MulticastListenerDone`, `MulticastListenerReportV2` & `Unknown`), plus common accessors (`type_u8`, `code_u8`, `checksum`, `header_len`, `payload`, `slice` & `is_checksum_valid`).
+  * Per-variant slice types (`MldQuerySlice`, `MldQueryWithSourcesSlice`, `MldReportSlice`, `MldDoneSlice`, `MldReportV2Slice` & `MldUnknownSlice`) with typed field accessors. Variable-length data is exposed where it exists: `MldReportV2Slice::multicast_address_records` and `MldQueryWithSourcesSlice::source_addresses` / `source_addrs_bytes`.
+  * `MulticastAddressRecordSlice` & `MulticastAddressRecordSliceIter` for iterating MLDv2 multicast address records (incl. typed `source_addresses` & `aux_data`).
+  * Owned header types (`MldV1Header`, `MldQueryWithSourcesHeader`, `MldReportV2Header`, `MulticastAddressRecordHeader` & `MldUnknownHeader`) reachable via `to_header`, as well as `MulticastAddress`, `MldMaxResponseCode` & `MulticastAddressRecordType`.
+  * New `err::Layer::Mld` error layer.
+  * Note that MLD is carried inside ICMPv6 and is not yet integrated into the
+    `SlicedPacket` / `PacketBuilder` paths. Use `MldSlice::from_slice` on the
+    ICMPv6 part of a packet.
+
 * Added zero-copy IGMP support (IGMPv1, IGMPv2 & IGMPv3):
   * `IgmpSlice`, an enum with one zero-copy variant per message type (`MembershipQuery`, `MembershipQueryWithSources`, `MembershipReportV1`, `MembershipReportV2`, `MembershipReportV3`, `LeaveGroup` & `Unknown`), plus common accessors (`header`, `payload`, `slice`, `checksum`, `is_checksum_valid`).
   * Per-variant slice types (`MembershipQuerySlice`, `MembershipQueryWithSourcesSlice`, `MembershipReportV1Slice`, `MembershipReportV2Slice`, `MembershipReportV3Slice`, `LeaveGroupSlice` & `IgmpUnknownSlice`) with typed field accessors. Variable-length data is exposed where it exists: `MembershipReportV3Slice::group_records` and `MembershipQueryWithSourcesSlice::source_addresses` / `source_addrs_bytes` (no longer `Option`-returning).

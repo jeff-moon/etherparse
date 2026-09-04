@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 05eb024c11dd6496ef1c7da70fceb0a3dd6232f7b2a3b8d8369f088a245e2d75 # shrinks to source_ip = [4, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 51, 0, 0, 0, 0], destination_ip = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], multicast_address = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], max_response_delay = 0, flip_byte = 0

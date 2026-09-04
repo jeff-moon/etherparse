@@ -11,6 +11,7 @@
 //! * TCP
 //! * ICMP & ICMPv6 (not all message types are supported)
 //! * IGMP (v1, v2 & v3)
+//! * MLD (v1 & v2, zero-copy slicing only)
 //!
 //! Reconstruction of fragmented IP packets is also supported, but requires allocations.
 //!
@@ -139,6 +140,7 @@
 //! * [`Icmpv4Slice::from_slice`]
 //! * [`Icmpv6Slice::from_slice`]
 //! * [`IgmpSlice::from_slice`]
+//! * [`MldSlice::from_slice`]
 //!
 //! The resulting data types allow access to both the header(s) and the payload of the layer
 //! and will automatically limit the length of payload if the layer has a length field limiting the
@@ -277,6 +279,7 @@
 //! * ICMP Router Discovery Messages [RFC 1256](https://datatracker.ietf.org/doc/html/rfc1256)
 //! * [Internet Control Message Protocol version 6 (ICMPv6) Parameters](https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml)
 //! * Multicast Listener Discovery (MLD) for IPv6 [RFC 2710](https://datatracker.ietf.org/doc/html/rfc2710)
+//! * Multicast Listener Discovery Version 2 (MLDv2) for IPv6 [RFC 3810](https://datatracker.ietf.org/doc/html/rfc3810)
 //! * Neighbor Discovery for IP version 6 (IPv6) [RFC 4861](https://datatracker.ietf.org/doc/html/rfc4861)
 //! * [LINKTYPE_LINUX_SLL](https://www.tcpdump.org/linktypes/LINKTYPE_LINUX_SLL.html) on tcpdump
 //! * LINUX_SLL [header definition](https://github.com/the-tcpdump-group/libpcap/blob/a932566fa1f6df16176ac702b1762ea1cd9ed9a3/pcap/sll.h) on libpcap
